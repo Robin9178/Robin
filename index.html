@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>智鳖电竞在线点单</title>
+<style>
+:root{--bg:#0b0f1a;--card:#151b2e;--main:#7c5cff;--text:#eef;--warn:#ffcc00}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text)}
+.banner{background:var(--warn);color:#111;padding:8px 12px;text-align:center;font-weight:700;font-size:14px}
+header{padding:28px 16px;text-align:center;background:linear-gradient(135deg,#1a1040,#0b0f1a)}
+h1{margin:0 0 8px;font-size:26px;color:#fff}
+.sub{color:#9aa4c7;font-size:14px;margin-bottom:4px}
+.tel{color:#ff6b6b;font-weight:700;font-size:16px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;padding:16px;max-width:900px;margin:0 auto}
+.card{background:var(--card);border:1px solid #2a3355;border-radius:16px;padding:20px;text-align:center;cursor:pointer;transition:transform .2s,border-color .2s}
+.card:active{transform:scale(0.97);border-color:var(--main)}
+.card h3{margin:0 0 8px;color:#fff}
+.card p{color:#9aa4c7;font-size:14px;margin:0}
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;justify-content:center;align-items:center;z-index:100;padding:16px}
+.modal{background:#151b2e;border:1px solid #2a3355;border-radius:16px;width:100%;max-width:500px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden}
+.modal-head{padding:14px 16px;background:#1a2340;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2a3355}
+.modal-head h2{margin:0;font-size:18px}
+.close-btn{background:transparent;color:#fff;border:0;font-size:22px;cursor:pointer;padding:0 8px}
+.modal-body{flex:1;overflow-y:auto;padding:12px}
+.item{background:#0b0f1a;border-radius:12px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;border:1px solid #222a44}
+.item:active{background:#1a2340}
+.item-name{font-weight:700}
+.item-price{color:#ffd166;font-weight:700}
+.player-card{background:#0b0f1a;border-radius:12px;padding:16px;margin-bottom:12px;display:flex;align-items:center;cursor:pointer;border:1px solid #222a44}
+.player-card:active{background:#1a2340}
+.player-avatar-ph{width:50px;height:50px;border-radius:50%;background:#1a2340;border:1px dashed #2a3355;display:flex;align-items:center;justify-content:center;color:#7c86a8;font-size:10px;margin-right:12px;flex-shrink:0;overflow:hidden}
+.player-avatar-ph img{width:100%;height:100%;object-fit:cover}
+.player-info h4{margin:0 0 4px;color:#fff;font-size:16px}
+.player-info p{margin:0;color:#9aa4c7;font-size:12px}
+.back-btn{background:#2a3355;color:#fff;border:0;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;margin-right:10px}
+.kefu{position:fixed;right:16px;bottom:16px;z-index:9;background:#00d084;color:#042;border-radius:999px;padding:12px 20px;font-weight:700;border:0;cursor:pointer;box-shadow:0 4px 12px rgba(0,208,132,0.4)}
+.chat{position:fixed;right:16px;bottom:74px;width:min(340px,calc(100vw - 32px));height:420px;background:#101628;border:1px solid #2a3355;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;z-index:10}
+.hidden{display:none}
+.chat-head{padding:10px 12px;background:#1a2340;font-weight:700;display:flex;justify-content:space-between;font-size:14px}
+.chat-body{flex:1;padding:10px;overflow-y:auto;font-size:14px}
+.msg{margin:6px 0;padding:8px 10px;border-radius:10px;max-width:85%;word-break:break-word;line-height:1.4}
+.msg.bot{background:#222c4a}
+.msg.me{background:var(--main);margin-left:auto}
+.chat-foot{display:flex;gap:8px;padding:8px;border-top:1px solid #2a3355}
+.chat-foot input{flex:1;background:#0b0f1a;border:1px solid #2a3355;color:#fff;border-radius:10px;padding:9px;outline:none}
+.chat-foot button{background:#00d084;color:#042;border:0;border-radius:10px;padding:0 14px;font-weight:700;cursor:pointer}
+footer{text-align:center;color:#7c86a8;font-size:12px;padding:28px 16px}
+</style>
+</head>
+<body>
+<div class="banner">⚠️ 整活演示网站：无法真实下单，客服是假的，请勿付款或提供个人信息。</div>
+<header>
+<div style="width:120px; height:120px; margin:0 auto 12px; background:#1a2340; border:1px dashed #2a3355; border-radius:20px; display:flex; align-items:center; justify-content:center; color:#7c86a8; font-size:14px;">Logo待添加</div>
+<h1>智鳖电竞</h1>
+<div class="sub">本店只接单 · 不发货 · 不负责 · 不抽象</div>
+<div class="tel">招募电话：110</div>
+</header>
+<main class="cards" id="mainCards"></main>
+
+<div class="modal-overlay" id="modalOverlay">
+<div class="modal">
+<div class="modal-head">
+  <div style="display:flex; align-items:center;">
+    <button class="back-btn" id="backBtn" style="display:none;">返回</button>
+    <h2 id="modalTitle"></h2>
+  </div>
+  <button class="close-btn" id="modalClose">×</button>
+</div>
+<div class="modal-body" id="modalBody"></div>
+</div>
+</div>
+
+<button class="kefu" id="kefuBtn">客服</button>
+<div class="chat hidden" id="chatBox">
+<div class="chat-head"><span>在线客服（假的）</span><button id="closeChat" style="background:transparent;color:#fff;border:0;font-size:18px;cursor:pointer">×</button></div>
+<div class="chat-body" id="chatBody">
+<div class="msg bot">你好，我是智鳖电竞的假客服。傻子不可以点单，但你可以问我“点单规则”。</div>
+</div>
+<div class="chat-foot">
+<input id="chatInput" placeholder="输入'三角洲'、'原神'等问规则...">
+<button id="sendBtn">发送</button>
+</div>
+</div>
+<footer>本页面仅为前端演示，不收集信息、不收款、不提供真实服务。</footer>
+<script>
+const playersData = [
+  { id: "p1", name: "冠鳖", avatar: "", tags: "三角洲、瓦罗兰特、技术过硬", desc: "擅长三角洲行动，能带你猛攻，也能带你白给。话多幽默，绝不压力老板。" },
+  { id: "p2", name: "季鳖", avatar: "", tags: "原神、星穹铁道、小萝莉", desc: "原神代肝上千单，安全可靠。星穹铁道大手子，老板说啥就是啥。" },
+  { id: "p3", name: "杰鳖", avatar: "", tags: "地球online男同", desc: "地球online专业陪玩，共进晚餐，决一死战，随时奉陪。擅长把老板爽飞。" },
+  { id: "p4", name: "知更鸟的狗", avatar: "", tags: "初音未来世界计划、屁股肉丝、舞萌dx等音游", desc: "实力陪打，绿谱以下随便虐。老板分数绝不会高于我。" },
+  { id: "p5", name: "鳖王", avatar: "", tags: "steam陪玩、恐怖、解谜", desc: "完全没有操作，游戏我负责查攻略老板负责操作。" }
+];
+const serviceData = {
+  "三角洲行动": { img: "", items: [
+      {name: "基础保底单", price: "100人民币", desc: "基础保底500w", img: ""},
+      {name: "三幻神单", price: "500元", img: ""},
+      {name: "开智单", price: "1000元", img: ""},
+      {name: "普坝清图单", price: "488元", img: ""},
+      {name: "傻子打手单", price: "9178元", img: ""},
+      {name: "实力陪玩1小时", price: "91元", img: ""}
+  ]},
+  "原神": { img: "", items: [{name: "代肝1600原石单", price: "78元", img: ""}, {name: "每日托管单包年", price: "910元", img: ""}] },
+  "崩坏星穹铁道": { img: "", items: [{name: "代肝1600星琼单", price: "67元", img: ""}, {name: "每日托管单包年", price: "910元", img: ""}] },
+  "蛋仔派对": { img: "", items: [{name: "实力全模式陪玩1小时", price: "91元", img: ""}, {name: "惊魂寻宝队模式护航保底300万", price: "588元", img: ""}] },
+  "我的世界": { img: "", items: [{name: "陪玩1小时", price: "91元", img: ""}] },
+  "初音未来世界计划": { img: "", items: [{name: "实力陪打1小时", price: "128元", img: ""}] },
+  "steam多人游戏陪玩": { img: "", items: [{name: "娱乐游戏1小时", price: "78元", img: ""}, {name: "恐怖/解谜游戏1小时", price: "91元", img: ""}, {name: "竞技游戏1小时", price: "168元", img: ""}] },
+  "地球online": { img: "", items: [
+      {name: "共进早餐", price: "670元", img: ""},
+      {name: "共进午餐", price: "780元", img: ""},
+      {name: "共进晚餐", price: "910元", img: ""},
+      {name: "陪睡一晚", price: "28888元", img: ""},
+      {name: "决一死战", price: "67891元", img: ""},
+      {name: "表白", price: "6666元", img: ""},
+      {name: "真心话大冒险5轮", price: "83519元", img: ""}
+  ]}
+};
+  const rulesData = {
+  "总则": "所有单子仅供娱乐，支付后禁止退款。",
+  "三角洲行动": "一.三角洲行动\n1.常规炸一句不加保底，机密炸打手加18万保底，绝密炸打手加60万保底\n2.老板绝不可以压力打手，不能骂打手，打手举报给客服老板十倍退款\n3.老板出了非洲之心和海洋之泪一定要给打手保管，防止被别人打死被抢走了\n4.老板进图给打手带大红包，如果不带打手可告诉客服老板全额十倍退款\n5.打手双倒算炸单，老板给打手补规则1保底\n6.所有单子打手选图",
+  "原神": "二.原神\n1.老板下单后扫码打手上号代肝\n2.老板禁止在代肝期间上号，包括托管\n3.账号被毁概不退款",
+  "崩坏星穹铁道": "三.崩坏星穹铁道\n1.老板下单后扫码打手上号代肝，打手禁止对游戏角色知更鸟做出过分行为，如有违反后果自负\n2.老板禁止在代肝期间上号，包括托管\n3.账号被毁概不退款",
+  "蛋仔派对": "四.蛋仔派对\n1.全模式陪玩打手选模式\n2.惊魂寻宝队护航规则见三角洲行动规则，炸单保底金额也相同\n3.老板禁止压力辱骂打手",
+  "我的世界": "五.我的世界\n1.打手想玩什么模组就玩什么模组\n2.如有打手未拥有的模组，老板需帮打手够买\n3.老板禁止压力辱骂打手",
+  "初音未来世界计划": "六.初音未来世界计划\n1.打手难度自选，老板只能打紫谱及以上\n2.老板分数不得高于打手\n3.老板禁止讨论关于瑞希性别的话题\n4.老板禁止压力辱骂打手",
+  "steam游戏陪玩": "七.steam游戏陪玩\n1.如有解谜老板禁止查攻略，老板禁止卡关\n2.竞技游戏老板禁止炸鱼\n3.老板禁止压力辱骂打手",
+  "地球online": "八.地球online\n1所有吃饭单打手选餐厅，打手点餐，老板结账\n2.陪睡单老板禁止反抗\n3.决战单打手自选武器，老板空手，双方填好生死状\n4.表白单老板向打手表白，打手随意反应\n5.真心话老板如实回答，大冒险老板必须执行，打手随意\n6，老板禁止辱骂打手\n7，本系列打手指定老板"
+};
+
+const mainCards = document.getElementById('mainCards');
+
+Object.keys(serviceData).forEach(key => {
+  const cardData = serviceData[key];
+  const card = document.createElement('div');
+  card.className = 'card';
+  let imgHtml = cardData.img ? `<img src="${cardData.img}" style="width:80px; height:80px; border-radius:16px; margin-bottom:12px; object-fit:cover;">` : `<div style="width:80px; height:80px; margin:0 auto 12px; background:#1a2340; border:1px dashed #2a3355; border-radius:16px; display:flex; align-items:center; justify-content:center; color:#7c86a8; font-size:12px;">分区图</div>`;
+  card.innerHTML = `${imgHtml}<h3>${key}</h3><p>点击查看下单选项</p>`;
+  card.onclick = () => openModal(key);
+  mainCards.appendChild(card);
+});
+
+const playerEntryCard = document.createElement('div');
+playerEntryCard.className = 'card';
+playerEntryCard.style.border = '1px solid var(--main)';
+playerEntryCard.innerHTML = `<div style="width:80px; height:80px; margin:0 auto 12px; background:#1a2340; border:1px dashed var(--main); border-radius:16px; display:flex; align-items:center; justify-content:center; color:var(--main); font-size:20px; font-weight:bold;">👤</div><h3>选择打手阵营</h3><p>点击查看所有抽象打手</p>`;
+playerEntryCard.onclick = () => openPlayersList();
+mainCards.appendChild(playerEntryCard);
+
+const modalOverlay = document.getElementById('modalOverlay');
+const modalTitle = document.getElementById('modalTitle');
+const modalBody = document.getElementById('modalBody');
+const modalClose = document.getElementById('modalClose');
+const backBtn = document.getElementById('backBtn');
+
+function closeModal() { modalOverlay.style.display = 'none'; backBtn.style.display = 'none'; }
+
+function openModal(partitionName) {
+  const partition = serviceData[partitionName];
+  modalTitle.textContent = partitionName;
+  backBtn.style.display = 'none';
+  modalBody.innerHTML = '';
+  partition.items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'item';
+    let itemImgHtml = item.img ? `<img src="${item.img}" style="width:40px; height:40px; border-radius:8px; margin-right:10px; object-fit:cover;">` : `<div style="width:40px; height:40px; margin-right:10px; background:#1a2340; border:1px dashed #2a3355; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#7c86a8; font-size:10px;">图</div>`;
+    div.innerHTML = `<div style="display:flex; align-items:center;">${itemImgHtml}<div><div class="item-name">${item.name}</div><div style="font-size:12px; color:#9aa4c7;">${item.desc || ''}</div></div></div><div class="item-price">${item.price}</div>`;
+    div.onclick = () => alert(`您尝试下单：${item.name} (${item.price})\n\n下单失败：检测到老板未开智，无法处理。\n本页面仅限娱乐，请勿真付款！`);
+    modalBody.appendChild(div);
+  });
+  modalOverlay.style.display = 'flex';
+}
+
+function openPlayersList() {
+  modalTitle.textContent = '打手阵营';
+  backBtn.style.display = 'none';
+  modalBody.innerHTML = '';
+  playersData.forEach(player => {
+    const div = document.createElement('div');
+    div.className = 'player-card';
+    let avatarHtml = player.avatar ? `<div class="player-avatar-ph"><img src="${player.avatar}"></div>` : `<div class="player-avatar-ph">头像</div>`;
+    div.innerHTML = `${avatarHtml}<div class="player-info"><h4>${player.name}</h4><p>${player.tags}</p></div>`;
+    div.onclick = () => openPlayerDetail(player);
+    modalBody.appendChild(div);
+  });
+  modalOverlay.style.display = 'flex';
+}
+
+function openPlayerDetail(player) {
+  modalTitle.textContent = player.name;
+  backBtn.style.display = 'block';
+  modalBody.innerHTML = '';
+  let avatarHtml = player.avatar ? `<div style="width:100px; height:100px; border-radius:50%; overflow:hidden; margin:0 auto 16px; border:2px solid var(--main);"><img src="${player.avatar}" style="width:100%; height:100%; object-fit:cover;"></div>` : `<div style="width:100px; height:100px; border-radius:50%; margin:0 auto 16px; background:#1a2340; border:1px dashed #2a3355; display:flex; align-items:center; justify-content:center; color:#7c86a8; font-size:12px;">照片待传</div>`;
+  modalBody.innerHTML = `${avatarHtml}<div style="text-align:center; margin-bottom:16px;"><h3 style="margin:0 0 8px; color:#fff;">${player.name}</h3><span style="background:#1a2340; padding:4px 8px; border-radius:6px; font-size:12px; color:var(--main);">${player.tags}</span></div><div style="background:#0b0f1a; padding:14px; border-radius:12px; border:1px solid #222a44; color:#c0c8e0; font-size:14px; line-height:1.6;">${player.desc}</div><div style="margin-top:16px; text-align:center;"><button style="background:var(--main); color:#fff; border:0; border-radius:8px; padding:10px 24px; font-weight:700; cursor:pointer;" onclick="alert('【整活提示】打手已收到您的申请！\\n\\n（但打手正在陪别人，请稍后再试）')">立即点TA</button></div>`;
+}
+
+backBtn.onclick = () => openPlayersList();
+modalClose.onclick = closeModal;
+modalOverlay.onclick = (e) => { if (e.target === modalOverlay) closeModal(); };
+
+const chatBox = document.getElementById('chatBox');
+const chatBody = document.getElementById('chatBody');
+const chatInput = document.getElementById('chatInput');
+const kefuBtn = document.getElementById('kefuBtn');
+const closeChat = document.getElementById('closeChat');
+const sendBtn = document.getElementById('sendBtn');
+
+kefuBtn.onclick = () => chatBox.classList.toggle('hidden');
+closeChat.onclick = () => chatBox.classList.add('hidden');
+
+const abstractReplies = ["嗯嗯，确实。","这个问题很弱智，我选择不回。","亲，这边建议您自己上分呢。","客服已跑路，我是自动回复。","您说得很对，但本店不接单。","再问就拉黑（假的）。","老板，110 打过电话了吗？"];
+
+function send() {
+  const text = chatInput.value.trim();
+  if (!text) return;
+  const me = document.createElement('div');
+  me.className = 'msg me';
+  me.textContent = text;
+  chatBody.appendChild(me);
+  chatInput.value = '';
+  chatBody.scrollTop = chatBody.scrollHeight;
+  setTimeout(() => {
+    const bot = document.createElement('div');
+    bot.className = 'msg bot';
+    let reply = "";
+    if (text.includes("总则") || text === "规则" || text.includes("总规则")) {
+      reply = rulesData["总则"] + "\n\n请输入具体游戏名（如：三角洲、原神）查看对应细则。";
+    } else {
+      let matched = false;
+      for (const key in rulesData) {
+        if (text.includes(key) || key.includes(text)) {
+          reply = rulesData[key];
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        reply = abstractReplies[Math.floor(Math.random()*abstractReplies.length)];
+      }
+    }
+    bot.textContent = reply;
+    chatBody.appendChild(bot);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }, 500);
+}
+
+sendBtn.onclick = send;
+chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+</script>
+</body>
+</html>
